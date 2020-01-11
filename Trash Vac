@@ -1,0 +1,48 @@
+#include<Servo.h>//调用Servo库
+#include<NewPing.h>//调用NewPing库
+
+Servo myservo;//创建一个舵机对象
+int pos = 0;//变量pos用来存储舵机位置
+#define TRIGGER_PIN  12//设置trigger引脚为12
+#define ECHO_PIN     11//设置echo引脚为11
+#define MAX_DISTANCE 200//设置最大测量距离
+int pushbutton = 2;//定义一个pushbutton的变量
+int fan = 7;//定义一个fan的变量
+int buttonState = HIGH;//将buttonState初始化为HIGH
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);//设置一个为NewPing类型的二位数组
+
+void setup() {
+  Serial.begin(9600);//设置波特率为9600
+  pinMode(pushbutton, INPUT);//设置pushbutton为输入模式
+  pinMode(fan, OUTPUT);//设置fan为输出模式
+  digitalWrite(fan, LOW);//将fan初始化为LOW
+  myservo.attach(9);//设置舵机的引脚为9
+  myservo.write(160);//将舵机初始化为160°
+}
+
+
+void loop() {
+  int value = digitalRead(pushbutton);//检测pushbutton的状况，命名它为value
+  Serial.println(value);//测试,输出value
+  if (value == LOW) {//如果value等于LOW
+    delay(3000);//等待3000ms
+    buttonState = !buttonState;//取反
+  }
+  if (buttonState == LOW) {//如果buttonstate为LOW
+    Serial.println("fan run");//测试，输出fan run
+    digitalWrite(fan, HIGH);//将fan初始化为HIGH
+  } else {//其他
+    digitalWrite(fan, LOW);//将fan初始化为LOW
+    unsigned long distance = sonar.ping_cm();//读取sonar.ping_cm,命名为unsigned long类型的distance
+    Serial.print("Distance:");//测试，输出distance：
+    Serial.println(distance);//测试，输出距离
+    if (distance <= 50 && distance > 0) {//如果distace小于等于50㎝并大于0㎝
+      myservo.write(50);//舵机转至50°
+      delay(5000);//等待5000ms
+      myservo.write(160);//舵机复原至160°
+      delay(1000);//等待1000ms（因为舵机的原因）
+    }
+    delay(50);//等待50ms
+  }
+}
